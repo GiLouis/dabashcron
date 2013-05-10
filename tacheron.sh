@@ -116,12 +116,19 @@ else
 					id2=0
 					for j in $(cat $i);do
 						aExecuter[${id}:${id2}]=$(echo "$j")
+						echo "$j" | cut --delimiter=" " -f 1
+						echo "$j" | cut --delimiter=" " -f 2
+						echo "$j" | cut --delimiter=" " -f 3
+						echo "$j" | cut --delimiter=" " -f 4
+						echo "$j" | cut --delimiter=" " -f 5
+						echo "$j" | cut --delimiter=" " -f 6
+
+						echo "$j" | cut --delimiter=" " -f 7-
 						#echo "DEBUG: ${id}:${id2} = $j"
 						id2=$(echo "${id2} + 1" | bc)
 					done
 					id=$(echo "${id} + 1" | bc)
 				done
-				echo ${aExecuter[0:0]}
 				IFS=${SAVEIFS}
 				sleep 1
 			done
