@@ -97,12 +97,34 @@ else
 		0)
 			echo "DEBUG: ?"
 			# Laisser la fonction de base au loisir du root ?
+
+			# Problèmes à venir :
+			# * On exécute avec l'user original ? Si oui : définir tableau pour tous !
+			# -- Pour le moment : inception de variables
+			# * Pourquoi tout le temps rafraichir les fichiers ?
+
+			declare -A aExecuter
+			declare -A prochExec
+			declare -A preceExec
+
 			while :;do
+				SAVEIFS=$IFS
+				IFS=$(echo -en "\n\b")
+				id=0
 				for i in ${path}/tacheron*;do
 					echo "DEBUG: Lecture de $i"
+					id2=0
+					for j in $(cat $i);do
+						aExecuter[${id}:${id2}]=$(echo "$j")
+						#echo "DEBUG: ${id}:${id2} = $j"
+						id2=$(echo "${id2} + 1" | bc)
+					done
+					id=$(echo "${id} + 1" | bc)
 				done
+				echo ${aExecuter[0:0]}
+				IFS=${SAVEIFS}
 				sleep 1
-			done;
+			done
 		;;
 		1)
 			echo "DEBUG: list"
