@@ -96,6 +96,13 @@ else
 	case ${action} in
 		0)
 			echo "DEBUG: ?"
+			# Laisser la fonction de base au loisir du root ?
+			while :;do
+				for i in ${path}/tacheron*;do
+					echo "DEBUG: Lecture de $i"
+				done
+				sleep 1
+			done;
 		;;
 		1)
 			echo "DEBUG: list"
@@ -125,7 +132,7 @@ else
                         fi
 
 			vi /tmp/tacheron${actionUser}
-			if [ -f /tmp/tacheron${actionUser} ];then
+			if [ -s /tmp/tacheron${actionUser} ];then
 				cp /tmp/tacheron${actionUser} ${path}/tacheron${actionUser}
 			else
 				echo "Action annulée"
