@@ -35,7 +35,12 @@ echo "TacheronTab v0.01"
 echo "Louis & Léo"
 echo "--------------"
 
-if [ $EUID -ne 0 ];then
+if [ $EUID -eq 0 ];then
+
+	if [ ! -d ${path} ];then
+		mkdir ${path}
+		chmod o+rw ${path}
+	fi
 
 	if [ ! -f /etc/tacherontab ];then
 		echo "Création duf fichier /etc/tacherontab"
@@ -52,6 +57,10 @@ if [ $EUID -ne 0 ];then
 		touch /etc/tacheron.deny
 	fi
 
+fi
+
+if [ ! -w ${path} ];then
+	echo "L'utilisateur $USER ne peut pas écrire dans ${path}, relancez le programme en mode administrateur pour tenter de fixer le problème"
 fi
 
 if ! checkIfAllowed $USER &&[ $EUID -ne 0 ];then
@@ -83,5 +92,45 @@ else
 	done
 
 	echo "DEBUG: ${action} pour ${actionUser}"
+
+	case ${action} in
+		0)
+			echo "DEBUG: ?"
+		;;
+		1)
+			echo "DEBUG: list"
+			if [ -f ${path}/tacheron${actionUser} ];then
+                                echo "DEBUG: le fichier ${path}/tacheron${actionUser} va être affiché"
+                                cat ${path}/tacheron${actionUser}
+                        else
+                                echo "Le fichier ${path}/tacheron${actionUser} n'existe pas"
+                        fi
+		;;
+		2)
+			echo "DEBUG: remove"
+			if [ -f ${path}/tacheron${actionUser} ];then
+				echo "DEBUG: le fichier ${path}/tacheron${actionUser} va être supprimé"
+				rm ${path}/tacheron${actionUser}
+			else
+				echo "Le fichier ${path}/tacheron${actionUser} n'existe pas"
+			fi
+		;;
+		3)
+			echo "DEBUG: edit"
+			if [ -f ${path}/tacheron${actionUser} ];then
+                                echo "DEBUG: le fichier ${path}/tacheron${actionUser} va être ouvert"
+                                cp ${path}/tacheron${actionUser} /tmp/tacheron${actionUser}
+                        else
+                                echo "DEBUG: Le fichier ${path}/tacheron${actionUser} n'existe pas : création"
+                        fi
+
+			vi /tmp/tacheron${actionUser}
+			if [ -f /tmp/tacheron${actionUser} ];then
+				cp /tmp/tacheron${actionUser} ${path}/tacheron${actionUser}
+			else
+				echo "Action annulée"
+			fi
+		;;
+	esac
 fi
 
