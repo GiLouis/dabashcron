@@ -8,23 +8,23 @@ function checkIfAllowed {
 	else
 		if [ -s /etc/tacheron.allow ];then
 			if grep --quiet ^$1$ /etc/tacheron.allow;then
-#				echo "$USER présent allow"
+#				echo "DEBUG: $USER présent allow"
 				return 0
 			else
-#				echo "$USER pas présent dans allow"
+#				echo "DEBUG: $USER pas présent dans allow"
 				return 1
 			fi
 		else
 			if [ -s /etc/tacheron.deny ];then
 				if grep --quiet ^$1$ /etc/tacheron.deny;then
-#					echo "$USER présent dans deny"
+#					echo "DEBUG: $USER présent dans deny"
 					return 1
 				else
-#					echo "$USER pas présent dans deny"
+#					echo "DEBUG: $USER pas présent dans deny"
 					return 0
 				fi
 			else
-#				echo "$USER absent de allow et deny"
+#				echo "DEBUG: $USER absent de allow et deny"
 				return 0
 			fi
 		fi
@@ -54,10 +54,34 @@ if [ $EUID -ne 0 ];then
 
 fi
 
-
 if ! checkIfAllowed $USER &&[ $EUID -ne 0 ];then
         echo "$USER n'es pas autorisé. Faites ajouter votre nom dans /etc/tacheron.allow ou retirer de /etc/tacheron.deny"
 else
-        echo "$USER autorisé"
+        echo "DEBUG: $USER autorisé"
+	actionUser=$USER
+	action=0
+	while getopts "u:lre" opts;do
+		case $opts in
+
+			u)
+				echo "DEBUG: Utilisateur $OPTARG"
+				actionUser=$OPTARG
+			;;
+			l)
+				echo "DEBUG: Option l"
+				action=1
+			;;
+			r)
+				echo "DEBUG: Option r"
+				action=2
+			;;
+			e)
+				echo "DEBUG: Option e"
+				action=3
+			;;
+		esac
+	done
+
+	echo "DEBUG: ${action} pour ${actionUser}"
 fi
 
