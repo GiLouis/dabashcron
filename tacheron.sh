@@ -21,6 +21,11 @@ function parse {
 	fi
 }
 
+function parseDiv {
+	return $(echo "$1" | cut --delimiter="/" -f2)
+
+}
+
 function calculerTemps {
 	# $1 : 15 secondes
 	# $2 : minutes
@@ -31,12 +36,29 @@ function calculerTemps {
 
 	# $7 : temps précédent
 
+	prochaineExec=0
 	parse "$1"
 	parseSec=$?
-	if [ "${parseSec}" -ne 5 ];then
-		echo "!=5"
+	if [ "${parseSec}" -eq 1 ];then
+		execSeq=$(echo "((($(date +%S)/15)+1)%4)*15" | bc)
+		# date --date="15 seconds" +%S
+	elif [ "${parseSec}" -eq 2 ];then
+		parseDiv "$1"
+		execSeq=$(echo "((($(date +%S)/15)+$?)%4)*15" | bc)
+		echo "DEBUG: execSeq=${execSeq}"
+	elif [ "${parseSec}" -eq 4 ];then
+		SAVEIFS=$IFS
+		IFS=$(echo ",")
+		for i in $(echo "$1");do
+			
+			resultCmp=$(echo "($(date --d=$7 +%S)/15)" | bc)
+			if [ ${resultCmp} -ne $i ];then
+				echo "test"
+			fi
+		done
+		IFS=${SAVEIFS}
 	else
-		echo "=5"
+		execSeq=$(echo "(($1)%4)*15" | bc)
 	fi
 }
 
