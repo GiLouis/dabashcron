@@ -2,6 +2,44 @@
 
 path='/etc/tacheron'
 
+function parse {
+	echo "DEBUG: $1"
+	if [ "$1" = "*" ];then
+		echo "DENUG: * détecté"
+		return 1
+	elif echo "$1" | grep --quiet ^\*\/ ;then
+		echo "DEBUG: */ détecté"
+		return 2
+	elif echo "$1" | grep --quiet \-;then
+		echo "DEBUG: - détecté"
+		return 3
+	elif echo "$1" | grep --quiet \,;then
+		echo "DEBUG: , détecté"
+		return 4
+	else
+		return 5
+	fi
+}
+
+function calculerTemps {
+	# $1 : 15 secondes
+	# $2 : minutes
+	# $3 : heures
+	# $4 : jour du mois
+	# $5 : mois de l'année
+	# $6 : jour de la semaine
+
+	# $7 : temps précédent
+
+	parse "$1"
+	parseSec=$?
+	if [ "${parseSec}" -ne 5 ];then
+		echo "!=5"
+	else
+		echo "=5"
+	fi
+}
+
 function checkIfAllowed {
 	if [ -z $1 ];then
 		echo "Fournir un nom à vérifier"
@@ -116,14 +154,17 @@ else
 					id2=0
 					for j in $(cat $i);do
 						aExecuter[${id}:${id2}]=$(echo "$j")
-						echo "$j" | cut --delimiter=" " -f 1
-						echo "$j" | cut --delimiter=" " -f 2
-						echo "$j" | cut --delimiter=" " -f 3
-						echo "$j" | cut --delimiter=" " -f 4
-						echo "$j" | cut --delimiter=" " -f 5
-						echo "$j" | cut --delimiter=" " -f 6
+						ch1=$(echo "$j" | cut --delimiter=" " -f 1)
+						ch2=$(echo "$j" | cut --delimiter=" " -f 2)
+						ch3=$(echo "$j" | cut --delimiter=" " -f 3)
+						ch4=$(echo "$j" | cut --delimiter=" " -f 4)
+						ch5=$(echo "$j" | cut --delimiter=" " -f 5)
+						ch6=$(echo "$j" | cut --delimiter=" " -f 6)
 
-						echo "$j" | cut --delimiter=" " -f 7-
+						ch7=$(echo "$j" | cut --delimiter=" " -f 7-)
+
+						# NdlR : il faut quoter le paramètre SINON le "*" passe mal (listage du répertoire) : faire la même chose si on a un echo dedans
+						calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}" "${prochExec[${id}:${id2}]}"
 						#echo "DEBUG: ${id}:${id2} = $j"
 						id2=$(echo "${id2} + 1" | bc)
 					done
