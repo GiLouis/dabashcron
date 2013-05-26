@@ -36,29 +36,16 @@ function calculerTemps {
 
 	# $7 : temps précédent
 
-	prochaineExec=0
-	parse "$1"
-	parseSec=$?
-	if [ "${parseSec}" -eq 1 ];then
-		execSeq=$(echo "((($(date +%S)/15)+1)%4)*15" | bc)
-		# date --date="15 seconds" +%S
-	elif [ "${parseSec}" -eq 2 ];then
-		parseDiv "$1"
-		execSeq=$(echo "((($(date +%S)/15)+$?)%4)*15" | bc)
-		echo "DEBUG: execSeq=${execSeq}"
-	elif [ "${parseSec}" -eq 4 ];then
-		SAVEIFS=$IFS
-		IFS=$(echo ",")
-		for i in $(echo "$1");do
-			
-			resultCmp=$(echo "($(date --d=$7 +%S)/15)" | bc)
-			if [ ${resultCmp} -ne $i ];then
-				echo "test"
-			fi
-		done
-		IFS=${SAVEIFS}
-	else
-		execSeq=$(echo "(($1)%4)*15" | bc)
+	if [ "$1" = "*" ]&&[ "$2" = "*" ]&&[ "$3" = "*" ]&&[ "$4" = "*" ]&&[ "$5" = "*" ]&&[ "$6" = "*" ];then
+		echo "DEBUG: Cas où tout vaut * : trouver les prochaines 15sec"
+		
+		#nextSec=$(echo "(( $(date +%S) / 15)+1)%4*15" | bc)
+		comptSec=$(echo "-$(date +%S) + (( $(date +%S) / 15)+1)*15" | bc)
+		
+		nextExec=$(date -d "${comptSec}sec")
+		echo ${nextExec}
+	elif [ "$1" != "*" ]&&[ "$2" = "*" ]&&[ "$3" = "*" ]&&[ "$4" = "*" ]&&[ "$5" = "*" ]&&[ "$6" = "*" ];then
+		echo "DEBUG: Seules les secondes ne valent pas * : prochaine minute"
 	fi
 }
 
