@@ -21,21 +21,20 @@ function parse {
 	fi
 }
 
+supprVal=""
+
 function getTilde {
-	declare -a supprVal=('Test','lol')
-	echo ${supprVal[@]}
-	for i in $(echo "$1" | cut --delimiter="~" --output-delimiter=" " -f2-);do
-		echo "TILDE : $i"
-		supprVal="${supprVal[@]}"
-	done
-
-
+	supprVal=""
+	supprVal=$(echo "$1" | cut --delimiter="~" --output-delimiter="
+" -f2-)
 	# Ce µ%$ù* de langage ne permet pas de renvoyer
 	# un tableau ou une chaine de caractères :
 	# Passer par les variables globales !
 
-	return "$(echo "${supprVal[@]}")"
+	echo "DEBUG: contenu de supprVal=${supprVal}"
 }
+
+interval=""
 
 function getInterval {
 	# Cette fonction va renvoyer un tableau des valeurs en parsant
@@ -45,16 +44,42 @@ function getInterval {
 	parse "$1"
 	resultat=$?
 
-	declare -a valeurs
+	interval=""
+	supprVal=""
 
 	if [ ${resultat} -eq 1 ];then
+		return 0
+	elif [ ${resultat} -eq 3 ];then
+		premiereVal=$(echo "$1" | cut --delimiter="-" -f1)
+		derniereVal=$(echo "$1" | cut --delimiter="-" -f2 | cut --delimiter="~" -f1)
 		if echo "$1" | grep --quiet \~;then
-			getTilde "$1"
-		else
-			return 0
+                        getTilde "$1"
 		fi
+
+		for((i=${premiereVal};i<=${derniereVal};i++));do
+			disable=0
+			if [ ! -z "${supprVal}" ];then
+	                        for j in ${supprVal};do
+					if [ "$j" = "$i" ];then
+						disable=1
+						break
+					fi
+				done
+			fi
+			if [ "${disable}" -eq 0 ];then
+				# La condition suivante permet d'éviter d'avoir un
+				# retour à la ligne après une valeur vide
+				if [ -z "${interval}" ];then
+					interval="$i"
+				else
+					interval="${interval}
+$i"
+				fi
+			fi
+                done
+		echo "DEBUG: contenu de inteval=${interval}"
 	else
-		echo "test"
+		echo "Rien"
 	fi
 }
 
