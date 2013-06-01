@@ -4,12 +4,12 @@ path='/etc/tacheron'
 
 function parse {
 	echo "DEBUG: $1"
-	if [ "$1" = "*" ];then
-		echo "DENUG: * détecté"
-		return 1
-	elif echo "$1" | grep --quiet ^\*\/ ;then
+	if echo "$1" | grep --quiet ^\*\/ ;then
 		echo "DEBUG: */ détecté"
 		return 2
+	elif echo "$1" | grep --quiet ^\* ;then
+		echo "DEBUG: * détecté"
+		return 1
 	elif echo "$1" | grep --quiet \-;then
 		echo "DEBUG: - détecté"
 		return 3
@@ -18,6 +18,43 @@ function parse {
 		return 4
 	else
 		return 5
+	fi
+}
+
+function getTilde {
+	declare -a supprVal=('Test','lol')
+	echo ${supprVal[@]}
+	for i in $(echo "$1" | cut --delimiter="~" --output-delimiter=" " -f2-);do
+		echo "TILDE : $i"
+		supprVal="${supprVal[@]}"
+	done
+
+
+	# Ce µ%$ù* de langage ne permet pas de renvoyer
+	# un tableau ou une chaine de caractères :
+	# Passer par les variables globales !
+
+	return "$(echo "${supprVal[@]}")"
+}
+
+function getInterval {
+	# Cette fonction va renvoyer un tableau des valeurs en parsant
+	# chaque type de champs.
+	# Renvoit zéro pour toutes les valeurs
+
+	parse "$1"
+	resultat=$?
+
+	declare -a valeurs
+
+	if [ ${resultat} -eq 1 ];then
+		if echo "$1" | grep --quiet \~;then
+			getTilde "$1"
+		else
+			return 0
+		fi
+	else
+		echo "test"
 	fi
 }
 
@@ -36,17 +73,20 @@ function calculerTemps {
 
 	# $7 : temps précédent
 
-	if [ "$1" = "*" ]&&[ "$2" = "*" ]&&[ "$3" = "*" ]&&[ "$4" = "*" ]&&[ "$5" = "*" ]&&[ "$6" = "*" ];then
-		echo "DEBUG: Cas où tout vaut * : trouver les prochaines 15sec"
-		
-		#nextSec=$(echo "(( $(date +%S) / 15)+1)%4*15" | bc)
-		comptSec=$(echo "-$(date +%S) + (( $(date +%S) / 15)+1)*15" | bc)
-		
-		nextExec=$(date -d "${comptSec}sec")
-		echo ${nextExec}
-	elif [ "$1" != "*" ]&&[ "$2" = "*" ]&&[ "$3" = "*" ]&&[ "$4" = "*" ]&&[ "$5" = "*" ]&&[ "$6" = "*" ];then
-		echo "DEBUG: Seules les secondes ne valent pas * : prochaine minute"
-	fi
+	getInterval "$1"
+	resultatSec=$?
+	getInterval "$2"
+	resultatMin=$?
+	getInterval "$3"
+	resultatHeures=$?
+	getInterval "$4"
+	resultatJour=$?
+	getInterval "$5"
+	resultatMois=$?
+	getInterval "$6"
+	resultatJourSem=$?
+	
+	
 }
 
 function checkIfAllowed {
@@ -180,7 +220,7 @@ else
 					id=$(echo "${id} + 1" | bc)
 				done
 				IFS=${SAVEIFS}
-				sleep 1
+				sleep 15
 			done
 		;;
 		1)
