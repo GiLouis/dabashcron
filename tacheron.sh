@@ -142,21 +142,33 @@ function calculerTemps {
 		if [ $i -eq 0 ]&&[ ${valider} -eq 1 ];then
 			valider=0
 	                for j in ${tabIntervalles[${compteur}]};do
-        	               	if [ $(date $(echo "${tabDateCmd[${compteur}]}")) -eq $j ];then
+				# Tout sauf les secondes
+        	               	if [ ${compteur} -ne 0 ]&&[ $(date $(echo "${tabDateCmd[${compteur}]}")) -eq $j ];then
                 	                valider=1
+				# Les secondes
+				elif [ ${compteur} -eq 0 ]&&[ $(echo $(echo "$(date $(echo ${tabDateCmd[${compteur}]}))/15") | bc) -eq $j ];then
+					valider=1
         	                fi
 	                done
 		elif [ $i -gt 0 ]&&[ ${valider} -eq 1 ];then
-			if [ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}") % $i") | bc) -ne 0 ];then
-				valider=0
+			# Vérification 
+			if [ $i -ne 1 ];then
+				# Tout sauf les secondes
+				if [ ${compteur} -ne 0 ]&&[ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}") / $i") | bc) -ne 1 ];then
+					valider=0
+				# Les secondes
+				elif [ ${compteur} -eq 0 ]&&[ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}")/15 / $i") | bc) -ne 1 ];then
+					valider=0
+				fi
 			fi
 		else
 			break
 		fi
+		echo "DEBUG: Evolution valide n°${compteur} i=$i ${valider}"
 		compteur=$(echo "$compteur + 1" | bc)
 	done
 
-	echo "VALIDE ? ${valider}"
+	echo "DEBUG: Valide final : ${valider}"
 }
 
 function checkIfAllowed {
