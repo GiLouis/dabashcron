@@ -37,9 +37,17 @@ function getTilde {
 interval=""
 
 function getInterval {
-	# Cette fonction va renvoyer un tableau des valeurs en parsant
-	# chaque type de champs.
-	# Renvoit zéro pour toutes les valeurs
+	# Cette fonction va parser le champ donné
+	# Gestion des intervalles avec possibilité de suppresion :
+	# 	On renvoit le code 0 et la liste des valeurs
+	# 	(retours à la lignes entre) est dans une variable globale
+	# Gestion des listes (séparation par virgule) :
+	# 	On renvoit le code 0 et la liste des valeurs
+	# 	est contenue dans une variable globale
+	# Gestion des champs étoilés :
+	# 	On renvoit le code 1 ou sinon la valeur du diviseur
+	# 	Remarque : la valeur du diviseur peut-être de 1
+	# 		   cela revient à un * simple
 
 	parse "$1"
 	resultat=$?
@@ -47,9 +55,8 @@ function getInterval {
 	interval=""
 	supprVal=""
 
-	if [ ${resultat} -eq 1 ];then
-		return 0
-	elif [ ${resultat} -eq 3 ];then
+	# Cas d'un champ intervalle
+	if [ ${resultat} -eq 3 ];then
 		premiereVal=$(echo "$1" | cut --delimiter="-" -f1)
 		derniereVal=$(echo "$1" | cut --delimiter="-" -f2 | cut --delimiter="~" -f1)
 		if echo "$1" | grep --quiet \~;then
@@ -77,19 +84,20 @@ $i"
 				fi
 			fi
                 done
+	# Cas d'un champ avec virgule
 	elif [ ${resultat} -eq 4 ];then
 		interval=$(echo "$1" | cut --delimiter="," --output-delimiter="
 " -f1-)
+	# Cas d'un champ étoile avec division
+	elif [ ${resultat} -eq 2 ];then
+		return $(echo "$1" | cut --delimiter="/" -f2)
+	# Cas d'un champ étoile
 	else
-		echo "Rien"
+		return 1
 	fi
+
         echo "DEBUG: contenu de inteval=${interval}"
-
-}
-
-function parseDiv {
-	return $(echo "$1" | cut --delimiter="/" -f2)
-
+	return 0
 }
 
 function calculerTemps {
@@ -99,8 +107,6 @@ function calculerTemps {
 	# $4 : jour du mois
 	# $5 : mois de l'année
 	# $6 : jour de la semaine
-
-	# $7 : temps précédent
 
 	getInterval "$1"
 	resultatSec=$?
@@ -242,8 +248,7 @@ else
 						ch7=$(echo "$j" | cut --delimiter=" " -f 7-)
 
 						# NdlR : il faut quoter le paramètre SINON le "*" passe mal (listage du répertoire) : faire la même chose si on a un echo dedans
-						calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}" "${prochExec[${id}:${id2}]}"
-						#echo "DEBUG: ${id}:${id2} = $j"
+						calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}"
 						id2=$(echo "${id2} + 1" | bc)
 					done
 					id=$(echo "${id} + 1" | bc)
