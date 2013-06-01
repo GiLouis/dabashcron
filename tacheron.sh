@@ -77,10 +77,14 @@ $i"
 				fi
 			fi
                 done
-		echo "DEBUG: contenu de inteval=${interval}"
+	elif [ ${resultat} -eq 4 ];then
+		interval=$(echo "$1" | cut --delimiter="," --output-delimiter="
+" -f1-)
 	else
 		echo "Rien"
 	fi
+        echo "DEBUG: contenu de inteval=${interval}"
+
 }
 
 function parseDiv {
