@@ -85,7 +85,7 @@ $i"
 			fi
                 done
 	# Cas d'un champ avec virgule
-	elif [ ${resultat} -eq 4 ];then
+	elif [ ${resultat} -eq 4 ]||[ ${resultat} -eq 5 ];then
 		interval=$(echo "$1" | cut --delimiter="," --output-delimiter="
 " -f1-)
 	# Cas d'un champ étoile avec division
@@ -96,7 +96,7 @@ $i"
 		return 1
 	fi
 
-        echo "DEBUG: contenu de inteval=${interval}"
+        echo "DEBUG: contenu de interval=${interval}"
 	return 0
 }
 
@@ -110,18 +110,53 @@ function calculerTemps {
 
 	getInterval "$1"
 	resultatSec=$?
+	intervalSec=${interval}
+
 	getInterval "$2"
 	resultatMin=$?
+	intervalMin=${interval}
+
 	getInterval "$3"
 	resultatHeures=$?
+	intervalHeures=${interval}
+
 	getInterval "$4"
 	resultatJour=$?
+	intervalJour=${interval}
+
 	getInterval "$5"
 	resultatMois=$?
+	intervalMois=${interval}
+
 	getInterval "$6"
 	resultatJourSem=$?
-	
-	
+	intervalJourSem=${interval}
+
+	tabResultats=(${resultatSec} ${resultatMin} ${resultatHeures} ${resultatJour} ${resultatMois} ${resultatJourSem})
+	tabDateCmd=("+%S" "+%M" "+%H" "+%d" "+%m" "+%w")
+	tabIntervalles=("${intervalSec}" "${intervalMin}" "${intervalHeures}" "${intervalJour}" "${intervalMois}" "${intervalJourSem}")
+
+	valider=1
+	compteur=0
+	for i in ${tabResultats[@]};do
+		if [ $i -eq 0 ]&&[ ${valider} -eq 1 ];then
+			valider=0
+	                for j in ${tabIntervalles[${compteur}]};do
+        	               	if [ $(date $(echo "${tabDateCmd[${compteur}]}")) -eq $j ];then
+                	                valider=1
+        	                fi
+	                done
+		elif [ $i -gt 0 ]&&[ ${valider} -eq 1 ];then
+			if [ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}") % $i") | bc) -ne 0 ];then
+				valider=0
+			fi
+		else
+			break
+		fi
+		compteur=$(echo "$compteur + 1" | bc)
+	done
+
+	echo "VALIDE ? ${valider}"
 }
 
 function checkIfAllowed {
