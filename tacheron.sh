@@ -158,14 +158,14 @@ function calculerTemps {
 			elif [ ${compteur} -eq 0 ]&&[ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}")/15 / $i") | bc) -ne 1 ];then
 				valider=0
 			fi
-		else
-			break
 		fi
 		echo "DEBUG: Evolution valide n°${compteur} i=$i ${valider}"
 		compteur=$(echo "$compteur + 1" | bc)
 	done
 
 	echo "DEBUG: Valide final : ${valider}"
+
+	return ${valider}
 }
 
 function checkIfAllowed {
@@ -278,6 +278,8 @@ else
 				IFS=$(echo -en "\n\b")
 				id=0
 				for i in ${path}/tacheron*;do
+					username=$(echo $i | sed 's/\/etc\/tacheron\/tacheron//')
+
 					echo "DEBUG: Lecture de $i"
 					id2=0
 					for j in $(cat $i);do
@@ -293,7 +295,12 @@ else
 
 						# NdlR : il faut quoter le paramètre SINON le "*" passe mal (listage du répertoire) : faire la même chose si on a un echo dedans
 						calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}"
+						valider="$?"
 						id2=$(echo "${id2} + 1" | bc)
+						if [ ${valider} -eq 1 ];then
+							echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
+							su -l -c "${ch7}" "${username}"
+						fi
 					done
 					id=$(echo "${id} + 1" | bc)
 				done
