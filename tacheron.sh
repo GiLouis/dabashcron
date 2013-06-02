@@ -150,16 +150,13 @@ function calculerTemps {
 					valider=1
         	                fi
 	                done
-		elif [ $i -gt 0 ]&&[ ${valider} -eq 1 ];then
-			# Vérification 
-			if [ $i -ne 1 ];then
-				# Tout sauf les secondes
-				if [ ${compteur} -ne 0 ]&&[ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}") / $i") | bc) -ne 1 ];then
-					valider=0
-				# Les secondes
-				elif [ ${compteur} -eq 0 ]&&[ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}")/15 / $i") | bc) -ne 1 ];then
-					valider=0
-				fi
+		elif [ $i -gt 1 ]&&[ ${valider} -eq 1 ];then
+			# Tout sauf les secondes
+			if [ ${compteur} -ne 0 ]&&[ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}") / $i") | bc) -ne 1 ];then
+				valider=0
+			# Les secondes
+			elif [ ${compteur} -eq 0 ]&&[ $(echo $(date "$(echo "${tabDateCmd[${compteur}]}")/15 / $i") | bc) -ne 1 ];then
+				valider=0
 			fi
 		else
 			break
