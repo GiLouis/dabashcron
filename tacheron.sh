@@ -269,10 +269,6 @@ else
 			# -- Pour le moment : inception de variables
 			# * Pourquoi tout le temps rafraichir les fichiers ?
 
-			declare -A aExecuter
-			declare -A prochExec
-			declare -A preceExec
-
 			while :;do
 				SAVEIFS=$IFS
 				IFS=$(echo -en "\n\b")
