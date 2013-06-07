@@ -3,18 +3,18 @@
 path='/etc/tacheron'
 
 function parse {
-	echo "DEBUG: $1"
+	# echo "DEBUG: $1"
 	if echo "$1" | grep --quiet ^\*\/ ;then
-		echo "DEBUG: */ détecté"
+		# echo "DEBUG: */ détecté"
 		return 2
 	elif echo "$1" | grep --quiet ^\* ;then
-		echo "DEBUG: * détecté"
+		# echo "DEBUG: * détecté"
 		return 1
 	elif echo "$1" | grep --quiet \-;then
-		echo "DEBUG: - détecté"
+		# echo "DEBUG: - détecté"
 		return 3
 	elif echo "$1" | grep --quiet \,;then
-		echo "DEBUG: , détecté"
+		# echo "DEBUG: , détecté"
 		return 4
 	else
 		return 5
@@ -31,7 +31,7 @@ function getTilde {
 	# un tableau ou une chaine de caractères :
 	# Passer par les variables globales !
 
-	echo "DEBUG: contenu de supprVal=${supprVal}"
+	# echo "DEBUG: contenu de supprVal=${supprVal}"
 }
 
 interval=""
@@ -96,7 +96,7 @@ $i"
 		return 1
 	fi
 
-        echo "DEBUG: contenu de interval=${interval}"
+        # echo "DEBUG: contenu de interval=${interval}"
 	return 0
 }
 
@@ -159,11 +159,11 @@ function calculerTemps {
 				valider=0
 			fi
 		fi
-		echo "DEBUG: Evolution valide n°${compteur} i=$i ${valider}"
+		# echo "DEBUG: Evolution valide n°${compteur} i=$i ${valider}"
 		compteur=$(echo "$compteur + 1" | bc)
 	done
 
-	echo "DEBUG: Valide final : ${valider}"
+	#echo "DEBUG: Valide final : ${valider}"
 
 	return ${valider}
 }
@@ -174,23 +174,23 @@ function checkIfAllowed {
 	else
 		if [ -s /etc/tacheron.allow ];then
 			if grep --quiet ^$1$ /etc/tacheron.allow;then
-#				echo "DEBUG: $USER présent allow"
+				# echo "DEBUG: $USER présent allow"
 				return 0
 			else
-#				echo "DEBUG: $USER pas présent dans allow"
+				# echo "DEBUG: $USER pas présent dans allow"
 				return 1
 			fi
 		else
 			if [ -s /etc/tacheron.deny ];then
 				if grep --quiet ^$1$ /etc/tacheron.deny;then
-#					echo "DEBUG: $USER présent dans deny"
+					# echo "DEBUG: $USER présent dans deny"
 					return 1
 				else
-#					echo "DEBUG: $USER pas présent dans deny"
+					# echo "DEBUG: $USER pas présent dans deny"
 					return 0
 				fi
 			else
-#				echo "DEBUG: $USER absent de allow et deny"
+					# echo "DEBUG: $USER absent de allow et deny"
 				return 0
 			fi
 		fi
@@ -209,7 +209,7 @@ if [ $EUID -eq 0 ];then
 	fi
 
 	if [ ! -f /etc/tacherontab ];then
-		echo "Création duf fichier /etc/tacherontab"
+		echo "Création du fichier /etc/tacherontab"
 		touch /etc/tacherontab
 	fi
 
@@ -232,7 +232,7 @@ fi
 if ! checkIfAllowed $USER &&[ $EUID -ne 0 ];then
         echo "$USER n'es pas autorisé. Faites ajouter votre nom dans /etc/tacheron.allow ou retirer de /etc/tacheron.deny"
 else
-        echo "DEBUG: $USER autorisé"
+        # echo "DEBUG: $USER autorisé"
 	actionUser=$USER
 
 	while :;do
@@ -241,7 +241,7 @@ else
 		for i in ${path}/tacheron*;do
 			username=$(echo $i | sed 's/\/etc\/tacheron\/tacheron//')
 			if checkIfAllowed ${username};then
-				echo "DEBUG: Lecture de $i"
+				# echo "DEBUG: Lecture de $i"
 				for j in $(cat $i);do
 					ch1=$(echo "$j" | cut --delimiter=" " -f 1)
 					ch2=$(echo "$j" | cut --delimiter=" " -f 2)
@@ -258,12 +258,12 @@ else
 					valider="$?"
 
 					if [ ${valider} -eq 1 ];then
-						echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
+						# echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
 						su -l -c "${ch7} &" "${username}"
 					fi
 				done
-			else
-				echo "DEBUG: utilisateur ${username} non-autorisé."
+			#else
+				# echo "DEBUG: utilisateur ${username} non-autorisé."
 			fi
 		done
 		IFS=${SAVEIFS}
