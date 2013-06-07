@@ -240,7 +240,7 @@ else
 		IFS=$(echo -en "\n\b")
 		for i in ${path}/tacheron*;do
 			username=$(echo $i | sed 's/\/etc\/tacheron\/tacheron//')
-			if checkIfAllowed ${username};then
+			if checkIfAllowed ${username}||[ "${username}" = "root" ];then
 				# echo "DEBUG: Lecture de $i"
 				for j in $(cat $i);do
 					ch1=$(echo "$j" | cut --delimiter=" " -f 1)
