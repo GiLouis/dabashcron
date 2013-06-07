@@ -259,7 +259,7 @@ else
 
 					if [ ${valider} -eq 1 ];then
 						echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
-						su -l -c "${ch7}" "${username}"
+						su -l -c "${ch7} &" "${username}"
 					fi
 				done
 			else
