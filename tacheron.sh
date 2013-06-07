@@ -234,110 +234,40 @@ if ! checkIfAllowed $USER &&[ $EUID -ne 0 ];then
 else
         echo "DEBUG: $USER autorisé"
 	actionUser=$USER
-	action=0
-	while getopts "u:lre" opts;do
-		case $opts in
 
-			u)
-				echo "DEBUG: Utilisateur $OPTARG"
-				actionUser=$OPTARG
-			;;
-			l)
-				echo "DEBUG: Option l"
-				action=1
-			;;
-			r)
-				echo "DEBUG: Option r"
-				action=2
-			;;
-			e)
-				echo "DEBUG: Option e"
-				action=3
-			;;
-		esac
-	done
+	while :;do
+		SAVEIFS=$IFS
+		IFS=$(echo -en "\n\b")
+		for i in ${path}/tacheron*;do
+			username=$(echo $i | sed 's/\/etc\/tacheron\/tacheron//')
+			if checkIfAllowed ${username};then
+				echo "DEBUG: Lecture de $i"
+				for j in $(cat $i);do
+					ch1=$(echo "$j" | cut --delimiter=" " -f 1)
+					ch2=$(echo "$j" | cut --delimiter=" " -f 2)
+					ch3=$(echo "$j" | cut --delimiter=" " -f 3)
+					ch4=$(echo "$j" | cut --delimiter=" " -f 4)
+					ch5=$(echo "$j" | cut --delimiter=" " -f 5)
+					ch6=$(echo "$j" | cut --delimiter=" " -f 6)
 
-	echo "DEBUG: ${action} pour ${actionUser}"
+					ch7=$(echo "$j" | cut --delimiter=" " -f 7-)
 
-	case ${action} in
-		0)
-			echo "DEBUG: ?"
-			# Laisser la fonction de base au loisir du root ?
+					# NdlR : il faut quoter le paramètre SINON le "*" passe mal (listage du répertoire)
+					# faire la même chose si on a un echo dedans
+					calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}"
+					valider="$?"
 
-			# Problèmes à venir :
-			# * On exécute avec l'user original ? Si oui : définir tableau pour tous !
-			# -- Pour le moment : inception de variables
-			# * Pourquoi tout le temps rafraichir les fichiers ?
-
-			while :;do
-				SAVEIFS=$IFS
-				IFS=$(echo -en "\n\b")
-				id=0
-				for i in ${path}/tacheron*;do
-					username=$(echo $i | sed 's/\/etc\/tacheron\/tacheron//')
-
-					echo "DEBUG: Lecture de $i"
-					id2=0
-					for j in $(cat $i);do
-						aExecuter[${id}:${id2}]=$(echo "$j")
-						ch1=$(echo "$j" | cut --delimiter=" " -f 1)
-						ch2=$(echo "$j" | cut --delimiter=" " -f 2)
-						ch3=$(echo "$j" | cut --delimiter=" " -f 3)
-						ch4=$(echo "$j" | cut --delimiter=" " -f 4)
-						ch5=$(echo "$j" | cut --delimiter=" " -f 5)
-						ch6=$(echo "$j" | cut --delimiter=" " -f 6)
-
-						ch7=$(echo "$j" | cut --delimiter=" " -f 7-)
-
-						# NdlR : il faut quoter le paramètre SINON le "*" passe mal (listage du répertoire) : faire la même chose si on a un echo dedans
-						calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}"
-						valider="$?"
-						id2=$(echo "${id2} + 1" | bc)
-						if [ ${valider} -eq 1 ];then
-							echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
-							su -l -c "${ch7}" "${username}"
-						fi
-					done
-					id=$(echo "${id} + 1" | bc)
+					if [ ${valider} -eq 1 ];then
+						echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
+						su -l -c "${ch7}" "${username}"
+					fi
 				done
-				IFS=${SAVEIFS}
-				sleep 15
-			done
-		;;
-		1)
-			echo "DEBUG: list"
-			if [ -f ${path}/tacheron${actionUser} ];then
-                                echo "DEBUG: le fichier ${path}/tacheron${actionUser} va être affiché"
-                                cat ${path}/tacheron${actionUser}
-                        else
-                                echo "Le fichier ${path}/tacheron${actionUser} n'existe pas"
-                        fi
-		;;
-		2)
-			echo "DEBUG: remove"
-			if [ -f ${path}/tacheron${actionUser} ];then
-				echo "DEBUG: le fichier ${path}/tacheron${actionUser} va être supprimé"
-				rm ${path}/tacheron${actionUser}
 			else
-				echo "Le fichier ${path}/tacheron${actionUser} n'existe pas"
+				echo "DEBUG: utilisateur ${username} non-autorisé."
 			fi
-		;;
-		3)
-			echo "DEBUG: edit"
-			if [ -f ${path}/tacheron${actionUser} ];then
-                                echo "DEBUG: le fichier ${path}/tacheron${actionUser} va être ouvert"
-                                cp ${path}/tacheron${actionUser} /tmp/tacheron${actionUser}
-                        else
-                                echo "DEBUG: Le fichier ${path}/tacheron${actionUser} n'existe pas : création"
-                        fi
-
-			vi /tmp/tacheron${actionUser}
-			if [ -s /tmp/tacheron${actionUser} ];then
-				cp /tmp/tacheron${actionUser} ${path}/tacheron${actionUser}
-			else
-				echo "Action annulée"
-			fi
-		;;
-	esac
+		done
+		IFS=${SAVEIFS}
+		sleep 15
+	done
 fi
 
