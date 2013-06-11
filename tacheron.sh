@@ -270,7 +270,7 @@ else
 		done
 		IFS=${SAVEIFS}
 		temps=$(echo "$temps - ($(date +%s) - ${starttime})" | bc)
-		echo "DEBUG: Sleeping pendant ${temps}"
+		# echo "DEBUG: Sleeping pendant ${temps}"
 		sleep "${temps}"
 	done
 fi
