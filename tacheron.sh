@@ -236,6 +236,8 @@ else
 	actionUser=$USER
 
 	while :;do
+		temps=15
+		starttime=$(date +%s)
 		SAVEIFS=$IFS
 		IFS=$(echo -en "\n\b")
 		for i in ${path}/tacheron*;do
@@ -267,7 +269,9 @@ else
 			fi
 		done
 		IFS=${SAVEIFS}
-		sleep 15
+		temps=$(echo "$temps - ($(date +%s) - ${starttime})" | bc)
+		echo "DEBUG: Sleeping pendant ${temps}"
+		sleep "${temps}"
 	done
 fi
 
