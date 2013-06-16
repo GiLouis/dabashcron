@@ -16,8 +16,10 @@ function parse {
 	elif echo "$1" | grep --quiet \,;then
 		# echo "DEBUG: , détecté"
 		return 4
-	else
+	elif echo "$1" | grep --quiet ^[0-9\,\-\*/]+$;then
 		return 5
+	else
+		return 6
 	fi
 }
 
@@ -254,15 +256,33 @@ else
 
 					ch7=$(echo "$j" | cut --delimiter=" " -f 7-)
 
-					# NdlR : il faut quoter le paramètre SINON le "*" passe mal (listage du répertoire)
-					# faire la même chose si on a un echo dedans
-					calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}"
-					valider="$?"
+					parse "${ch1}"
+					valid1="$?"
+					parse "${ch2}"
+					valid2="$?"
+					parse "${ch3}"
+					valid3="$?"
+					parse "${ch4}"
+					valid4="$?"
+					parse "${ch5}"
+					valid5="$?"
+					parse "${ch6}"
+					valid6="$?"
 
-					if [ ${valider} -eq 1 ];then
-						# echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
-						su -l -c "${ch7} &" "${username}"
-						echo "$(date) - ${username} - ($?) - ${ch7}" >> /var/log/tacheron
+					if [ $(echo "${valid1}") -ne 6 ]&&[ $(echo "${valid2}") -ne 6 ]&&[ $(echo "${valid3}") -ne 6 ]&&[ $(echo "${valid4}") -ne 6 ]&&[ $(echo "${valid5}") -ne 6 ]&&[ $(echo "${valid6}") -ne 6 ];then
+						# NdlR : il faut quoter le paramètre SINON le "*" passe mal (listage du répertoire)
+						# faire la même chose si on a un echo dedans
+						calculerTemps "${ch1}" "${ch2}" "${ch3}" "${ch4}" "${ch5}" "${ch6}"
+						valider="$?"
+
+						if [ ${valider} -eq 1 ];then
+							# echo "DEBUG: Execution avec les droits de ${username} de la commande : ${ch7}"
+							su -l -c "${ch7} &" "${username}"
+							echo "$(date) - ${username} - ($?) - ${ch7}" >> /var/log/tacheron
+						fi
+					else
+						# echo "DEBUG: Erreur de syntaxe"
+						echo "$(date) - ${username} - Erreur de syntaxe pour la commande $ch7" >> /var/log/tacheron
 					fi
 				done
 			#else
