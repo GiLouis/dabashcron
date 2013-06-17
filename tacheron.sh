@@ -4,20 +4,22 @@ path='/etc/tacheron'
 
 function parse {
 	# echo "DEBUG: $1"
-	if echo "$1" | grep --quiet ^\*\/ ;then
-		# echo "DEBUG: */ détecté"
-		return 2
-	elif echo "$1" | grep --quiet ^\* ;then
-		# echo "DEBUG: * détecté"
-		return 1
-	elif echo "$1" | grep --quiet \-;then
-		# echo "DEBUG: - détecté"
-		return 3
-	elif echo "$1" | grep --quiet \,;then
-		# echo "DEBUG: , détecté"
-		return 4
-	elif echo "$1" | grep --quiet ^[0-9\,\-\*/]+$;then
-		return 5
+	if echo "$1" | grep --quiet ^[0-9\,\-\*/]*$;then
+		if echo "$1" | grep --quiet ^\*\/ ;then
+			# echo "DEBUG: */ détecté"
+			return 2
+		elif echo "$1" | grep --quiet ^\* ;then
+			# echo "DEBUG: * détecté"
+			return 1
+		elif echo "$1" | grep --quiet \-;then
+			# echo "DEBUG: - détecté"
+			return 3
+		elif echo "$1" | grep --quiet \,;then
+			# echo "DEBUG: , détecté"
+			return 4
+		else
+			return 5
+		fi
 	else
 		return 6
 	fi
