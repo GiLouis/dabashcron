@@ -4,7 +4,9 @@ path='/etc/tacheron'
 
 function parse {
 	# echo "DEBUG: $1"
-	if echo "$1" | grep --quiet ^[0-9\,\-\*/]*$;then
+	# L'erreur la plus bizarre au monde : si on place
+	# le \- après le 0-9 ça ne marche plus !
+	if echo "$1" | grep --quiet ^[\-0-9\,\*/~]*$;then
 		if echo "$1" | grep --quiet ^\*\/ ;then
 			# echo "DEBUG: */ détecté"
 			return 2
